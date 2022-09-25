@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import css from './App.module.css';
+import Notification from './Notification/Notification';
 import Filter from "./Filter/Filter";
 import ContactList from "./ContactList/ContactList";
 import ContactForm from "./ContactForm/ContactForm";
@@ -57,9 +58,23 @@ class App extends Component {
     );
   };
 
+  componentDidMount() {
+    const contacts = localStorage.getItem('contacts')
+    const parsedContacts = JSON.parse(contacts)
+
+    if(parsedContacts) {
+      this.setState({contacts: parsedContacts});
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if(this.state.contacts !== prevState.contacts) {
+      localStorage.setItem('contacts', JSON.stringify(this.state.contacts))
+    }
+  }
 
  render() {
-  const { filter } = this.state;
+  const {contacts, filter } = this.state;
   const visibleContacts = this.getVisibleContacts();
 
   return(
@@ -68,8 +83,19 @@ class App extends Component {
       <ContactForm onSubmit={this.addContact}/>
 
       <h2>Contacts</h2>
-      <Filter value={filter} onChange={this.changeFilter} />
-      <ContactList contacts={visibleContacts} onDeleteContact={this.deleteContact}/>
+
+      {contacts.length > 0 ? (
+          <>
+            <Filter value={filter} onChange={this.changeFilter} />
+            <ContactList contacts={visibleContacts} onDeleteContact={this.deleteContact}/>
+          </>
+        ) : (
+          <Notification message="Contact list is empty! Please, add new contacts." />
+        )}
+
+
+      
+      
     </div>
   );
 
